@@ -1,26 +1,14 @@
 <div align="center">
-    <img width="200" height="200" src="assets/images/logo/logo.png">
-</div>
-
-
-
-<div align="center">
     <h1>PiliPlus</h1>
-<div align="center">
 
-中文 | [English](README.en.md)
+  <p>【自用魔改版】</p>
+  <p>【将首页替换为 稍后再看&历史记录，删去所有视频推荐功能】</p>
 
-![GitHub repo size](https://img.shields.io/github/repo-size/bggRGjQaUbCoE/PiliPlus) 
-![GitHub Repo stars](https://img.shields.io/github/stars/bggRGjQaUbCoE/PiliPlus) 
-![GitHub all releases](https://img.shields.io/github/downloads/bggRGjQaUbCoE/PiliPlus/total) 
-</div>
-    <p>使用Flutter开发的BiliBili第三方客户端</p>
+  <p>使用Flutter开发的BiliBili第三方客户端</p>
     
-<img src="assets/screenshots/510shots_so.png" width="32%" alt="home" />
-<img src="assets/screenshots/174shots_so.png" width="32%" alt="home" />
-<img src="assets/screenshots/850shots_so.png" width="32%" alt="home" />
 <br/>
 <img src="assets/screenshots/main_screen.png" width="96%" alt="home" />
+<br/>
 <br/>
 </div>
 
