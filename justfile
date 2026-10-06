@@ -18,8 +18,9 @@ patch:
     $env:GITHUB_WORKSPACE = '{{justfile_directory()}}'; pwsh lib/scripts/patch.ps1 android
 
 # 生成版本信息文件 pili_release.json（会改写 pubspec.yaml 的 version 行，属构建副作用，提交代码前注意还原）
+# GITHUB_ENV 是 build.ps1 依赖的 CI 环境变量，本地指向临时文件即可
 version:
-    pwsh lib/scripts/build.ps1 android
+    $env:GITHUB_ENV = "$env:TEMP/pili_github_env"; pwsh lib/scripts/build.ps1 android
 
 # release 编译，按 ABI 分包；产物在 build/app/outputs/flutter-apk/，手机装 arm64-v8a 那个
 build:
