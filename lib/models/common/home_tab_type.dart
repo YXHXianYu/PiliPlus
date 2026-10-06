@@ -1,6 +1,8 @@
 import 'package:PiliPlus/models/common/enum_with_label.dart';
 import 'package:PiliPlus/models/common/later_view_type.dart';
 import 'package:PiliPlus/pages/common/common_controller.dart';
+import 'package:PiliPlus/pages/fav/pgc/controller.dart';
+import 'package:PiliPlus/pages/fav/pgc/view.dart';
 import 'package:PiliPlus/pages/history/controller.dart';
 import 'package:PiliPlus/pages/history/view.dart';
 import 'package:PiliPlus/pages/hot/controller.dart';
@@ -25,9 +27,10 @@ enum HomeTabType implements EnumWithLabel {
   rank('分区'),
   bangumi('番剧'),
   cinema('影视'),
-  // 睡前防刷定制：新增稍后再看/历史记录两个首页 tab
+  // 睡前防刷定制：新增稍后再看/历史记录/追番三个首页 tab
   later('稍后再看'),
   history('历史记录'),
+  favBangumi('追番'),
   ;
 
   @override
@@ -45,6 +48,8 @@ enum HomeTabType implements EnumWithLabel {
     HomeTabType.later => () =>
         Get.find<LaterController>(tag: LaterViewType.all.type.toString()),
     HomeTabType.history => () => Get.find<HistoryController>(tag: 'all'),
+    // 追番页默认停在"在看"子 tab，其 controller tag 为 '类型+状态'
+    HomeTabType.favBangumi => () => Get.find<FavPgcController>(tag: '12'),
   };
 
   Widget get page => switch (this) {
@@ -57,5 +62,7 @@ enum HomeTabType implements EnumWithLabel {
     // 嵌入模式：不显示页面自身的 AppBar，完整功能仍可从"我的"页进入
     HomeTabType.later => const LaterPage(embedded: true),
     HomeTabType.history => const HistoryPage(embedded: true),
+    // 追番页本身无 AppBar，接口默认按追番时间从新到旧排序
+    HomeTabType.favBangumi => const FavPgcPage(type: 1),
   };
 }

@@ -62,8 +62,8 @@ class HomeController extends GetxController
   }
 
   void setTabConfig() {
-    // 睡前防刷定制：首页固定只保留稍后再看/历史记录，忽略持久化的 tab 配置
-    tabs = [HomeTabType.later, HomeTabType.history];
+    // 睡前防刷定制：首页固定为追番/稍后再看/历史记录，忽略持久化的 tab 配置
+    tabs = [HomeTabType.favBangumi, HomeTabType.later, HomeTabType.history];
 
     tabController = TabController(
       initialIndex: 0,
