@@ -401,30 +401,8 @@ class _PgcIntroPageState extends State<PgcIntroPage> {
       height: 48,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
+        // 睡前防刷定制：移除点赞/投币按钮，只保留收藏/再看/转发
         children: [
-          Obx(
-            () => ActionItem(
-              animation: introController.tripleAnimation,
-              icon: const Icon(FontAwesomeIcons.thumbsUp),
-              selectIcon: const Icon(FontAwesomeIcons.solidThumbsUp),
-              selectStatus: introController.hasLike.value,
-              semanticsLabel: '点赞',
-              text: NumUtils.numFormat(stat.like),
-              onStartTriple: introController.onStartTriple,
-              onCancelTriple: introController.onCancelTriple,
-            ),
-          ),
-          Obx(
-            () => ActionItem(
-              animation: introController.tripleAnimation,
-              icon: const Icon(FontAwesomeIcons.b),
-              selectIcon: const Icon(FontAwesomeIcons.b),
-              onTap: introController.actionCoinVideo,
-              selectStatus: introController.hasCoin,
-              semanticsLabel: '投币',
-              text: NumUtils.numFormat(stat.coin),
-            ),
-          ),
           Obx(
             () => ActionItem(
               animation: introController.tripleAnimation,
