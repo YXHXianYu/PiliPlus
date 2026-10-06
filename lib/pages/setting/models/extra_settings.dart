@@ -121,24 +121,7 @@ List<SettingsModel> get extraSettings => [
     setKey: SettingBoxKey.showViewPoints,
     defaultVal: true,
   ),
-  const SwitchModel(
-    title: '视频页显示相关视频',
-    leading: Icon(MdiIcons.motionPlayOutline),
-    setKey: SettingBoxKey.showRelatedVideo,
-    defaultVal: true,
-  ),
-  const SwitchModel(
-    title: '显示视频评论',
-    leading: Icon(MdiIcons.commentTextOutline),
-    setKey: SettingBoxKey.showVideoReply,
-    defaultVal: true,
-  ),
-  const SwitchModel(
-    title: '显示番剧评论',
-    leading: Icon(MdiIcons.commentTextOutline),
-    setKey: SettingBoxKey.showBangumiReply,
-    defaultVal: true,
-  ),
+  // 睡前防刷定制：相关推荐/评论已默认关闭，此处不再提供开关
   const SwitchModel(
     title: '默认展开视频简介',
     leading: Icon(Icons.expand_more),

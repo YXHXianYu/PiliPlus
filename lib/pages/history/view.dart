@@ -18,9 +18,12 @@ import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
 
 class HistoryPage extends StatefulWidget {
-  const HistoryPage({super.key, this.type});
+  const HistoryPage({super.key, this.type, this.embedded = false});
 
   final String? type;
+
+  // 睡前防刷定制：嵌入首页 tab 时为 true，不显示自身 AppBar
+  final bool embedded;
 
   @override
   State<HistoryPage> createState() => _HistoryPageState();
@@ -67,6 +70,22 @@ class _HistoryPageState extends State<HistoryPage>
         physics: const AlwaysScrollableScrollPhysics(),
         controller: _historyController.scrollController,
         slivers: [
+          // 睡前防刷定制：20 分钟以上过滤开关，对所有分类子 tab 生效
+          SliverToBoxAdapter(
+            child: Obx(
+              () => Row(
+                children: [
+                  const SizedBox(width: 12),
+                  const Expanded(child: Text('仅显示 20 分钟以上的视频')),
+                  Switch(
+                    value: _historyController.baseCtr.onlyLongVideo.value,
+                    onChanged: _historyController.baseCtr.setOnlyLongVideo,
+                  ),
+                  const SizedBox(width: 6),
+                ],
+              ),
+            ),
+          ),
           SliverPadding(
             padding: EdgeInsets.only(
               top: 7,
@@ -86,6 +105,7 @@ class _HistoryPageState extends State<HistoryPage>
       () {
         final enableMultiSelect =
             _historyController.baseCtr.enableMultiSelect.value;
+        final body = _buildTabBody(child, enableMultiSelect);
         return popScope(
           canPop: !enableMultiSelect,
           onPopInvokedWithResult: (didPop, result) {
@@ -93,66 +113,85 @@ class _HistoryPageState extends State<HistoryPage>
               currCtr().handleSelect();
             }
           },
-          child: SimpleScaffold(
-            appBar: MultiSelectAppBarWidget(
-              visible: enableMultiSelect,
-              ctr: currCtr(),
-              child: _buildAppBar,
-            ),
-            body: Padding(
-              padding: .only(left: padding.left, right: padding.right),
-              child: Obx(() {
-                final tabs = _historyController.tabs;
-                if (tabs.isEmpty) {
-                  return child;
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          // 睡前防刷定制：嵌入首页时无 AppBar，多选模式下仍提供操作栏
+          child: widget.embedded
+              ? Column(
                   children: [
-                    ?_buildPauseTip,
-                    TabBar(
-                      controller: _historyController.tabController,
-                      onTap: (index) {
-                        if (!_historyController
-                            .tabController!
-                            .indexIsChanging) {
-                          currCtr().scrollController.animToTop();
-                        } else {
-                          if (enableMultiSelect) {
-                            currCtr(
-                              _historyController.tabController!.previousIndex,
-                            ).handleSelect();
-                          }
-                        }
-                      },
-                      tabs: [
-                        const Tab(text: '全部'),
-                        ...tabs.map((item) => Tab(text: item.name)),
-                      ],
-                    ),
-                    Expanded(
-                      child: TabBarView(
-                        physics: enableMultiSelect
-                            ? const NeverScrollableScrollPhysics()
-                            : tabBarScrollPhysics,
-                        controller: _historyController.tabController,
-                        horizontalDragGestureRecognizer:
-                            CustomHorizontalDragGestureRecognizer.new,
-                        children: [
-                          KeepAliveWrapper(child: child),
-                          ...tabs.map(
-                            (item) => HistoryPage(type: item.type),
-                          ),
-                        ],
+                    if (enableMultiSelect)
+                      MultiSelectAppBarWidget(
+                        visible: true,
+                        ctr: currCtr(),
+                        child: AppBar(),
                       ),
-                    ),
+                    Expanded(child: body),
                   ],
-                );
-              }),
-            ),
-          ),
+                )
+              : SimpleScaffold(
+                  appBar: MultiSelectAppBarWidget(
+                    visible: enableMultiSelect,
+                    ctr: currCtr(),
+                    child: _buildAppBar,
+                  ),
+                  body: body,
+                ),
         );
       },
+    );
+  }
+
+  // 历史记录主内容：暂停提示 + 分类 TabBar + 分页列表
+  Widget _buildTabBody(Widget child, bool enableMultiSelect) {
+    final padding = MediaQuery.viewPaddingOf(context);
+    return Padding(
+      padding: .only(left: padding.left, right: padding.right),
+      child: Obx(() {
+        final tabs = _historyController.tabs;
+        if (tabs.isEmpty) {
+          return child;
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ?_buildPauseTip,
+            TabBar(
+              controller: _historyController.tabController,
+              onTap: (index) {
+                if (!_historyController
+                    .tabController!
+                    .indexIsChanging) {
+                  currCtr().scrollController.animToTop();
+                } else {
+                  if (enableMultiSelect) {
+                    currCtr(
+                      _historyController.tabController!.previousIndex,
+                    ).handleSelect();
+                  }
+                }
+              },
+              tabs: [
+                const Tab(text: '全部'),
+                ...tabs.map((item) => Tab(text: item.name)),
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
+                physics: enableMultiSelect
+                    ? const NeverScrollableScrollPhysics()
+                    : tabBarScrollPhysics,
+                controller: _historyController.tabController,
+                horizontalDragGestureRecognizer:
+                    CustomHorizontalDragGestureRecognizer.new,
+                children: [
+                  KeepAliveWrapper(child: child),
+                  ...tabs.map(
+                    (item) => HistoryPage(type: item.type),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      }),
     );
   }
 
@@ -207,25 +246,32 @@ class _HistoryPageState extends State<HistoryPage>
   Widget _buildBody(LoadingState<List<HistoryItemModel>?> loadingState) {
     return switch (loadingState) {
       Loading() => gridSkeleton,
-      Success(:final response) =>
-        response != null && response.isNotEmpty
-            ? SliverGrid.builder(
-                gridDelegate: gridDelegate,
-                itemBuilder: (context, index) {
-                  if (index == response.length - 1) {
-                    _historyController.onLoadMore();
-                  }
-                  final item = response[index];
-                  return HistoryItem(
-                    item: item,
-                    ctr: _historyController,
-                    onDelete: (kid, business) =>
-                        _historyController.delHistory(item),
-                  );
-                },
-                itemCount: response.length,
-              )
-            : HttpError(onReload: _historyController.onReload),
+      Success(:final response) => () {
+          // 睡前防刷定制：开启过滤时只保留 20 分钟以上的视频，无时长信息的记录（如直播）不过滤
+          final list = _historyController.baseCtr.onlyLongVideo.value
+              ? response
+                    ?.where((e) => e.duration == null || e.duration! >= 1200)
+                    .toList()
+              : response;
+          return list != null && list.isNotEmpty
+              ? SliverGrid.builder(
+                  gridDelegate: gridDelegate,
+                  itemBuilder: (context, index) {
+                    if (index == list.length - 1) {
+                      _historyController.onLoadMore();
+                    }
+                    final item = list[index];
+                    return HistoryItem(
+                      item: item,
+                      ctr: _historyController,
+                      onDelete: (kid, business) =>
+                          _historyController.delHistory(item),
+                    );
+                  },
+                  itemCount: list.length,
+                )
+              : HttpError(onReload: _historyController.onReload);
+        }(),
       Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _historyController.onReload,
@@ -290,6 +336,7 @@ class _HistoryPageState extends State<HistoryPage>
     return null;
   }
 
+  // 嵌入首页 tab 时也需要保持页面存活，避免切换 tab 后重新加载
   @override
-  bool get wantKeepAlive => widget.type != null;
+  bool get wantKeepAlive => widget.type != null || widget.embedded;
 }

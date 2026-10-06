@@ -12,7 +12,6 @@ import 'package:PiliPlus/common/widgets/stateful_builder.dart';
 import 'package:PiliPlus/models/common/bar_hide_type.dart';
 import 'package:PiliPlus/models/common/dynamic/dynamic_badge_mode.dart';
 import 'package:PiliPlus/models/common/dynamic/up_panel_position.dart';
-import 'package:PiliPlus/models/common/home_tab_type.dart';
 import 'package:PiliPlus/models/common/msg/msg_unread_type.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
@@ -348,19 +347,7 @@ List<SettingsModel> get styleSettings => [
     leading: Icon(Icons.chrome_reader_mode_outlined),
     onTap: _showSpringDialog,
   ),
-  NormalModel(
-    onTap: (context, setState) => Get.toNamed(
-      '/barSetting',
-      arguments: {
-        'key': SettingBoxKey.tabBarSort,
-        'defaultBars': HomeTabType.values,
-        'title': '首页标签页',
-      },
-    ),
-    title: '首页标签页',
-    subtitle: '删除或调换首页标签页',
-    leading: const Icon(Icons.toc_outlined),
-  ),
+  // 睡前防刷定制：首页 tab 已固定为稍后再看/历史记录，不再提供配置入口
   NormalModel(
     onTap: (context, setState) => Get.toNamed(
       '/barSetting',

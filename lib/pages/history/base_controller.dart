@@ -2,6 +2,7 @@ import 'package:PiliPlus/http/user.dart';
 import 'package:PiliPlus/utils/accounts.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:PiliPlus/utils/storage_key.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:get/get.dart';
 import 'package:material_ui/material_ui.dart';
@@ -11,6 +12,14 @@ class HistoryBaseController extends GetxController {
 
   RxBool enableMultiSelect = false.obs;
   RxInt checkedCount = 0.obs;
+
+  // 睡前防刷定制：历史记录默认只显示 20 分钟以上的视频
+  late final RxBool onlyLongVideo = Pref.historyOnlyLongVideo.obs;
+
+  void setOnlyLongVideo(bool value) {
+    onlyLongVideo.value = value;
+    GStorage.setting.put(SettingBoxKey.historyOnlyLongVideo, value);
+  }
 
   final account = Accounts.history;
 

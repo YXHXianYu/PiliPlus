@@ -18,16 +18,23 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:material_ui/material_ui.dart';
 
 class LaterPage extends StatefulWidget {
-  const LaterPage({super.key});
+  const LaterPage({super.key, this.embedded = false});
+
+  // 睡前防刷定制：嵌入首页 tab 时为 true，不显示自身 AppBar
+  final bool embedded;
 
   @override
   State<LaterPage> createState() => _LaterPageState();
 }
 
 class _LaterPageState extends State<LaterPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   final LaterBaseController _baseCtr = Get.put(LaterBaseController());
   late final TabController _tabController;
+
+  // 嵌入首页 tab 时需要保持页面存活，避免切换 tab 后重新加载
+  @override
+  bool get wantKeepAlive => true;
 
   LaterController currCtr([int? index]) {
     final type = LaterViewType.values[index ?? _tabController.index];
@@ -62,10 +69,83 @@ class _LaterPageState extends State<LaterPage>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final padding = MediaQuery.viewPaddingOf(context);
     return Obx(
       () {
         final enableMultiSelect = _baseCtr.enableMultiSelect.value;
+        final fab = Padding(
+          padding: .only(
+            right: kFloatingActionButtonMargin + padding.right,
+            bottom: kFloatingActionButtonMargin + padding.bottom,
+          ),
+          child: Obx(
+            () => currCtr().loadingState.value.isSuccess
+                ? AnimatedSlide(
+                    offset: _baseCtr.isPlayAll.value
+                        ? Offset.zero
+                        : const Offset(0.75, 0),
+                    duration: const Duration(milliseconds: 120),
+                    child: GestureDetector(
+                      onHorizontalDragDown: (details) =>
+                          _baseCtr.dx = details.localPosition.dx,
+                      onHorizontalDragStart: (details) =>
+                          _baseCtr.setIsPlayAll(
+                            details.localPosition.dx < _baseCtr.dx,
+                          ),
+                      child: FloatingActionButton.extended(
+                        onPressed: () {
+                          if (_baseCtr.isPlayAll.value) {
+                            currCtr().toViewPlayAll();
+                          } else {
+                            _baseCtr.setIsPlayAll(true);
+                          }
+                        },
+                        label: const Text('播放全部'),
+                        icon: const Icon(Icons.playlist_play),
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        );
+        final body = ViewSafeArea(
+          child: Column(
+            children: [
+              TabBar(
+                // isScrollable: true,
+                // tabAlignment: TabAlignment.start,
+                controller: _tabController,
+                tabs: LaterViewType.values.map((item) {
+                  final count = _baseCtr.counts[item.index];
+                  return Tab(
+                    text: '${item.title}${count != -1 ? '($count)' : ''}',
+                  );
+                }).toList(),
+                onTap: (_) {
+                  if (!_tabController.indexIsChanging) {
+                    currCtr().scrollController.animToTop();
+                  } else if (enableMultiSelect) {
+                    currCtr(_tabController.previousIndex).handleSelect();
+                  }
+                },
+              ),
+              Expanded(
+                child: TabBarView(
+                  physics: enableMultiSelect
+                      ? const NeverScrollableScrollPhysics()
+                      : tabBarScrollPhysics,
+                  controller: _tabController,
+                  horizontalDragGestureRecognizer:
+                      CustomHorizontalDragGestureRecognizer.new,
+                  children: LaterViewType.values
+                      .map((item) => item.page)
+                      .toList(),
+                ),
+              ),
+            ],
+          ),
+        );
         return popScope(
           canPop: !enableMultiSelect,
           onPopInvokedWithResult: (didPop, result) {
@@ -73,81 +153,27 @@ class _LaterPageState extends State<LaterPage>
               currCtr().handleSelect();
             }
           },
-          child: SimpleScaffold(
-            appBar: _buildAppbar(enableMultiSelect),
-            fab: Padding(
-              padding: .only(
-                right: kFloatingActionButtonMargin + padding.right,
-                bottom: kFloatingActionButtonMargin + padding.bottom,
-              ),
-              child: Obx(
-                () => currCtr().loadingState.value.isSuccess
-                    ? AnimatedSlide(
-                        offset: _baseCtr.isPlayAll.value
-                            ? Offset.zero
-                            : const Offset(0.75, 0),
-                        duration: const Duration(milliseconds: 120),
-                        child: GestureDetector(
-                          onHorizontalDragDown: (details) =>
-                              _baseCtr.dx = details.localPosition.dx,
-                          onHorizontalDragStart: (details) =>
-                              _baseCtr.setIsPlayAll(
-                                details.localPosition.dx < _baseCtr.dx,
-                              ),
-                          child: FloatingActionButton.extended(
-                            onPressed: () {
-                              if (_baseCtr.isPlayAll.value) {
-                                currCtr().toViewPlayAll();
-                              } else {
-                                _baseCtr.setIsPlayAll(true);
-                              }
-                            },
-                            label: const Text('播放全部'),
-                            icon: const Icon(Icons.playlist_play),
-                          ),
+          // 睡前防刷定制：嵌入首页时无 AppBar，多选模式下仍提供操作栏
+          child: widget.embedded
+              ? Scaffold(
+                  floatingActionButton: fab,
+                  body: Column(
+                    children: [
+                      if (enableMultiSelect)
+                        MultiSelectAppBarWidget(
+                          visible: true,
+                          ctr: currCtr(),
+                          child: AppBar(),
                         ),
-                      )
-                    : const SizedBox.shrink(),
-              ),
-            ),
-            body: ViewSafeArea(
-              child: Column(
-                children: [
-                  TabBar(
-                    // isScrollable: true,
-                    // tabAlignment: TabAlignment.start,
-                    controller: _tabController,
-                    tabs: LaterViewType.values.map((item) {
-                      final count = _baseCtr.counts[item.index];
-                      return Tab(
-                        text: '${item.title}${count != -1 ? '($count)' : ''}',
-                      );
-                    }).toList(),
-                    onTap: (_) {
-                      if (!_tabController.indexIsChanging) {
-                        currCtr().scrollController.animToTop();
-                      } else if (enableMultiSelect) {
-                        currCtr(_tabController.previousIndex).handleSelect();
-                      }
-                    },
+                      Expanded(child: body),
+                    ],
                   ),
-                  Expanded(
-                    child: TabBarView(
-                      physics: enableMultiSelect
-                          ? const NeverScrollableScrollPhysics()
-                          : tabBarScrollPhysics,
-                      controller: _tabController,
-                      horizontalDragGestureRecognizer:
-                          CustomHorizontalDragGestureRecognizer.new,
-                      children: LaterViewType.values
-                          .map((item) => item.page)
-                          .toList(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+                )
+              : SimpleScaffold(
+                  appBar: _buildAppbar(enableMultiSelect),
+                  fab: fab,
+                  body: body,
+                ),
         );
       },
     );

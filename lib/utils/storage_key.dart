@@ -79,6 +79,7 @@ abstract final class SettingBoxKey {
       showRelatedVideo = 'showRelatedVideo',
       showVideoReply = 'showVideoReply',
       showBangumiReply = 'showBangumiReply',
+      historyOnlyLongVideo = 'historyOnlyLongVideo',
       alwaysExpandIntroPanel = 'alwaysExapndIntroPanel',
       expandIntroPanelH = 'exapndIntroPanelH',
       horizontalSeasonPanel = 'horizontalSeasonPanel',

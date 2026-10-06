@@ -33,9 +33,9 @@ build-snapshot:
 debug:
     flutter build apk --debug
 
-# 连接设备调试，支持热重载（USB 或无线 adb 均可，设备需先被 flutter devices 识别）
-run:
-    flutter run
+# 连接设备调试，支持热重载；多设备时可传设备 id 指定（just r 10AG1F264B004DA），不传则交互选择
+run device="":
+    flutter run {{ if device != "" { "-d " + device } else { "" } }}
 
 # 拉取依赖（改了 pubspec.yaml 后执行）
 deps:

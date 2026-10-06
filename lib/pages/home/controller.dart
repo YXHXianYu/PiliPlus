@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:PiliPlus/http/api.dart';
 import 'package:PiliPlus/http/init.dart';
@@ -7,8 +6,6 @@ import 'package:PiliPlus/models/common/home_tab_type.dart';
 import 'package:PiliPlus/pages/common/common_controller.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/services/account_service.dart';
-import 'package:PiliPlus/utils/storage.dart';
-import 'package:PiliPlus/utils/storage_key.dart';
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/wbi_sign.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -65,16 +62,12 @@ class HomeController extends GetxController
   }
 
   void setTabConfig() {
-    final tabs = GStorage.setting.get(SettingBoxKey.tabBarSort) as List?;
-    if (tabs != null) {
-      this.tabs = tabs.map((i) => HomeTabType.values[i]).toList();
-    } else {
-      this.tabs = HomeTabType.values;
-    }
+    // 睡前防刷定制：首页固定只保留稍后再看/历史记录，忽略持久化的 tab 配置
+    tabs = [HomeTabType.later, HomeTabType.history];
 
     tabController = TabController(
-      initialIndex: max(0, this.tabs.indexOf(HomeTabType.rcmd)),
-      length: this.tabs.length,
+      initialIndex: 0,
+      length: tabs.length,
       vsync: this,
     );
   }

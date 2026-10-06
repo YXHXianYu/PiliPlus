@@ -375,14 +375,19 @@ abstract final class Pref {
   static bool get showViewPoints =>
       _setting.get(SettingBoxKey.showViewPoints, defaultValue: true);
 
+  // 睡前防刷定制：相关推荐/评论默认关闭，且已从设置页移除入口
   static bool get showRelatedVideo =>
-      _setting.get(SettingBoxKey.showRelatedVideo, defaultValue: true);
+      _setting.get(SettingBoxKey.showRelatedVideo, defaultValue: false);
 
   static bool get showVideoReply =>
-      _setting.get(SettingBoxKey.showVideoReply, defaultValue: true);
+      _setting.get(SettingBoxKey.showVideoReply, defaultValue: false);
 
   static bool get showBangumiReply =>
-      _setting.get(SettingBoxKey.showBangumiReply, defaultValue: true);
+      _setting.get(SettingBoxKey.showBangumiReply, defaultValue: false);
+
+  // 睡前防刷定制：历史记录默认只显示 20 分钟以上的视频
+  static bool get historyOnlyLongVideo =>
+      _setting.get(SettingBoxKey.historyOnlyLongVideo, defaultValue: true);
 
   static bool get alwaysExpandIntroPanel =>
       _setting.get(SettingBoxKey.alwaysExpandIntroPanel, defaultValue: false);
